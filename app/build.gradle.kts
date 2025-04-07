@@ -46,4 +46,15 @@ application {
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+    jvmArgs(project.extra["extraJvmArgs"] as List<*>)
+}
+
+project.extra["extraJvmArgs"] = if (java.toolchain.languageVersion.get().asInt() < 17) {
+    listOf()
+} else {
+    listOf(
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        // Include other necessary opens
+//        "--add-opens=java.base/java.lang=ALL-UNNAMED"
+    )
 }

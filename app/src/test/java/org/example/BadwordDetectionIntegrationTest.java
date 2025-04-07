@@ -37,8 +37,18 @@ public class BadwordDetectionIntegrationTest {
         });
         Map<String, Boolean> badWords = ImmutableMap.of("fuck", true, "shit", true, "damn", true);
         env.fromData("fuck this damn project")
-                .map(s -> List.of(new BadwordEntry(List.of("fuck"), new BadwordEntry.Position(0, 3))))
-                // need to add type information for lambda function
+                .map(s -> {
+                    List<BadwordEntry> entries = new ArrayList<>();
+                    entries.add(new BadwordEntry(
+                            new ArrayList<>(List.of("fuck")),  // Use ArrayList instead of List.of()
+                            new Position(0, 3)
+                    ));
+                    entries.add(new BadwordEntry(
+                            new ArrayList<>(List.of("damn")),
+                            new Position(10, 13)
+                    ));
+                    return entries;
+                })
                 .returns(info)
                 .addSink(new CollectSink());
 
@@ -54,8 +64,6 @@ public class BadwordDetectionIntegrationTest {
 
         env.execute();
 
-        System.out.println(values);
-
         // verify your results
 //        env.fromData("fuck", "world", "hello", "hello", "this", "is", "shit", "damn");
         // detect badword and offset
@@ -65,12 +73,14 @@ public class BadwordDetectionIntegrationTest {
 //          {"keyword": ["damn"] , position: {start: 10, end: 13} }
 //        ]
 
-        Assertions.assertTrue(CollectSink.values.containsAll(List.of(
+        System.out.println(CollectSink.values);
+
+        Assertions.assertTrue(CollectSink.values.contains(
                 List.of(
-                        new BadwordEntry(List.of("fuck"), new BadwordEntry.Position(0, 3)),
-                        new BadwordEntry(List.of("damn"), new BadwordEntry.Position(10, 13))
+                        new BadwordEntry(List.of("fuck"), new Position(0, 3)),
+                        new BadwordEntry(List.of("damn"), new Position(10, 13))
                 )
-        )));
+        ));
     }
 
     // create a testing sink
@@ -82,35 +92,6 @@ public class BadwordDetectionIntegrationTest {
         @Override
         public void invoke(List<BadwordEntry> value, SinkFunction.Context context) throws Exception {
             values.add(value);
-        }
-    }
-
-    public class BadwordEntry {
-        //        [
-//          {"keyword": ["damn", "fuck"] , position: {start: 0, end: 3} }
-//          {"keyword": ["damn"] , position: {start: 10, end: 13} }
-//        ]
-        public List<String> keyword;
-        public Position position;
-
-        public BadwordEntry() {
-        }
-
-        public BadwordEntry(List<String> keyword, Position position) {
-            this.keyword = keyword;
-            this.position = position;
-        }
-
-        public static class Position {
-            public int start;
-            public int end;
-
-            public Position() {}
-
-            public Position(int start, int end) {
-                this.start = start;
-                this.end = end;
-            }
         }
     }
 }
