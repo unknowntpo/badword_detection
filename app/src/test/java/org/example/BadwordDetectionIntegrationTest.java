@@ -33,23 +33,9 @@ public class BadwordDetectionIntegrationTest {
         // values are collected in a static variable
         CollectSink.values.clear();
 
-        TypeInformation<List<BadwordEntry>> info = TypeInformation.of(new TypeHint<List<BadwordEntry>>() {
-        });
         Map<String, Boolean> badWords = ImmutableMap.of("fuck", true, "shit", true, "damn", true);
         env.fromData("fuck this damn project")
-                .map(s -> {
-                    List<BadwordEntry> entries = new ArrayList<>();
-                    entries.add(new BadwordEntry(
-                            new ArrayList<>(List.of("fuck")),  // Use ArrayList instead of List.of()
-                            new Position(0, 3)
-                    ));
-                    entries.add(new BadwordEntry(
-                            new ArrayList<>(List.of("damn")),
-                            new Position(10, 13)
-                    ));
-                    return entries;
-                })
-                .returns(info)
+                .map(new BadwordMapFunction())
                 .addSink(new CollectSink());
 
 //        for each input data, expect output
