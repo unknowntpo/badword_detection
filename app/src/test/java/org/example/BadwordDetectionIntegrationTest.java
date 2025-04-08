@@ -33,7 +33,7 @@ public class BadwordDetectionIntegrationTest {
         // values are collected in a static variable
         CollectSink.values.clear();
 
-        Map<String, Boolean> badWords = ImmutableMap.of("fuck", true, "shit", true, "damn", true);
+
         env.fromData("fuck this damn project")
                 .map(new BadwordMapFunction())
                 .addSink(new CollectSink());
