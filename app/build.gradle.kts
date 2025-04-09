@@ -27,8 +27,11 @@ dependencies {
 
     implementation(libs.flink.java)
     implementation(libs.flink.streaming.java)
+    implementation(libs.flink.connector.base)
+    implementation(libs.flink.connector.kafka)
     implementation(libs.flink.clients)
     implementation(libs.flink.avro)
+    implementation(libs.kafka.clients)
 
     testImplementation(libs.flink.test.utils)
 }

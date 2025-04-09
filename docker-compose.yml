@@ -1,0 +1,79 @@
+version: '3'
+
+x-kafka-defaults: &kafka-defaults
+  image: confluentinc/cp-kafka:7.5.0
+  environment: &kafka-environment-defaults
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+    KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+    KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka1:29093,2@kafka2:29093,3@kafka3:29093
+    KAFKA_PROCESS_ROLES: 'broker,controller'
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+    CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+services:
+  kafka1:
+    <<: *kafka-defaults
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    environment:
+      <<: *kafka-environment-defaults
+      KAFKA_NODE_ID: 1
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: CONTROLLER://kafka1:29093,PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://0.0.0.0:9092
+    volumes:
+      - kafka1-data:/var/lib/kafka/data
+
+  kafka2:
+    <<: *kafka-defaults
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "9093:9093"
+      - "19093:19093"
+    environment:
+      <<: *kafka-environment-defaults
+      KAFKA_NODE_ID: 2
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:29092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENERS: CONTROLLER://kafka2:29093,PLAINTEXT://kafka2:29092,PLAINTEXT_HOST://0.0.0.0:9093
+    volumes:
+      - kafka2-data:/var/lib/kafka/data
+
+  kafka3:
+    <<: *kafka-defaults
+    hostname: kafka3
+    container_name: kafka3
+    ports:
+      - "9094:9094"
+      - "19094:19094"
+    environment:
+      <<: *kafka-environment-defaults
+      KAFKA_NODE_ID: 3
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:29092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENERS: CONTROLLER://kafka3:29093,PLAINTEXT://kafka3:29092,PLAINTEXT_HOST://0.0.0.0:9094
+    volumes:
+      - kafka3-data:/var/lib/kafka/data
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-kraft
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:29092,kafka2:29092,kafka3:29092
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+
+volumes:
+  kafka1-data:
+  kafka2-data:
+  kafka3-data:
