@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "Position",
+  "namespace": "org.example",
+  "fields": [
+    {"name": "start", "type": "int"},
+    {"name": "end", "type": "int"}
+  ]
+} 

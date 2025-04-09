@@ -8,6 +8,7 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+	alias(libs.plugins.avro)
 }
 
 repositories {
@@ -27,6 +28,7 @@ dependencies {
     implementation(libs.flink.java)
     implementation(libs.flink.streaming.java)
     implementation(libs.flink.clients)
+    implementation(libs.flink.avro)
 
     testImplementation(libs.flink.test.utils)
 }
@@ -44,6 +46,7 @@ application {
 }
 
 tasks.named<Test>("test") {
+	dependsOn("generateTestAvroJava")
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
     jvmArgs(project.extra["extraJvmArgs"] as List<*>)
@@ -57,4 +60,13 @@ project.extra["extraJvmArgs"] = if (java.toolchain.languageVersion.get().asInt()
         // Include other necessary opens
 //        "--add-opens=java.base/java.lang=ALL-UNNAMED"
     )
+}
+
+tasks.register<com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask>("generateAvroSchema") {
+    source("src/main/avro")
+    setOutputDir(file("build/generated-main-avro-java"))
+}
+
+tasks.named("compileJava") {
+    dependsOn("generateAvroSchema")
 }

@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "name": "BadwordEntry",
+  "namespace": "org.example",
+  "fields": [
+    {
+      "name": "keyword",
+      "type": {
+        "type": "array",
+        "items": "string"
+      }
+    },
+    {
+      "name": "position",
+      "type": "Position"
+    }
+  ]
+} 

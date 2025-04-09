@@ -1,0 +1,37 @@
+{
+  "namespace": "org.example",
+  "type": "record",
+  "name": "BadwordEntries",
+  "fields": [
+    {
+      "name": "entries",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "BadwordEntry",
+          "fields": [
+            {
+              "name": "keyword",
+              "type": {
+                "type": "array",
+                "items": "string"
+              }
+            },
+            {
+              "name": "position",
+              "type": {
+                "type": "record",
+                "name": "Position",
+                "fields": [
+                  {"name": "start", "type": "int"},
+                  {"name": "end", "type": "int"}
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+} 

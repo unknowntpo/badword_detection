@@ -5,11 +5,16 @@
 guava = "33.2.1-jre"
 junit-jupiter = "5.10.3"
 flink = "1.20.0"
+avro-plugin = "1.9.1"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 flink-java = { module = "org.apache.flink:flink-java", version.ref = "flink" }
+flink-avro = { module = "org.apache.flink:flink-avro", version.ref = "flink" }
 flink-streaming-java = { module = "org.apache.flink:flink-streaming-java", version.ref = "flink" }
 flink-clients = { module = "org.apache.flink:flink-clients", version.ref = "flink" }
 flink-test-utils = { module = "org.apache.flink:flink-test-utils", version.ref = "flink" }
+
+[plugins]
+avro = { id = "com.github.davidmc24.gradle.plugin.avro", version.ref = "avro-plugin" }

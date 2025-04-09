@@ -4,12 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BadwordMapFunction implements MapFunction<String, List<BadwordEntry>> {
+public class BadwordMapFunction implements MapFunction<String, BadwordEntries> {
     private static Map<String, Boolean> badWords = ImmutableMap.of("fuck", true, "shit", true, "damn", true);
 
 //    public static String[] split(String record) {
@@ -17,8 +15,8 @@ public class BadwordMapFunction implements MapFunction<String, List<BadwordEntry
 //        return record.split("[, ]+");
 //    }
 
-    public static List<BadwordEntry> split(String record) {
-        ArrayList<BadwordEntry> entries = new ArrayList<BadwordEntry>();
+    public static BadwordEntries split(String record) {
+        List<BadwordEntry> entries = new ArrayList<BadwordEntry>();
         Map<String, Boolean> del = Map.of(",", true, " ", true);
         int len = record.length();
         int l = 0;
@@ -43,11 +41,14 @@ public class BadwordMapFunction implements MapFunction<String, List<BadwordEntry
             l = r;
         }
 
-        return entries;
+//        return entries;
+        BadwordEntries badWordEntries = new BadwordEntries();
+        badWordEntries.setEntries(entries);
+        return badWordEntries;
     }
 
     @Override
-    public List<BadwordEntry> map(String record) throws Exception {
+    public BadwordEntries map(String record) throws Exception {
 //        List<BadwordEntry> entries = new ArrayList<>();
         return split(record);
 //        Arrays.stream(split(record)).forEach(word -> {
