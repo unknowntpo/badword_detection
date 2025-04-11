@@ -8,7 +8,6 @@ import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.test.util.MiniClusterWithClientResource;
-import org.apache.flink.connector.datagen.functions.*;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DeleteTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -29,6 +28,7 @@ import java.util.Properties;
 public class BadwordDetectionIntegrationTest {
 
     private static final String TOPIC_NAME = "chat_messages";
+    private static final int MESSAGE_COUNT = 30;
     @ClassRule
     public static MiniClusterWithClientResource flinkCluster = new MiniClusterWithClientResource(new MiniClusterResourceConfiguration.Builder().setNumberSlotsPerTaskManager(2).setNumberTaskManagers(1).build());
     private static AdminClient adminClient;
@@ -39,7 +39,6 @@ public class BadwordDetectionIntegrationTest {
     @BeforeAll
     public static void beforeAll() {
         // setup kafka
-
         Properties props = new Properties();
         props.put("bootstrap.servers", bootstrapServers);
 
@@ -96,6 +95,7 @@ public class BadwordDetectionIntegrationTest {
                 .setTopics(TOPIC_NAME)
                 .setGroupId("my-group")
                 .setStartingOffsets(OffsetsInitializer.earliest())
+                .setBounded(OffsetsInitializer.latest())
                 .setValueOnlyDeserializer(new SimpleStringSchema())
                 .build();
 
@@ -103,21 +103,16 @@ public class BadwordDetectionIntegrationTest {
                 .map(new BadwordMapFunction())
                 .addSink(new CollectSink());
 
-//        env.fromData("fuck this damn project")
-//                .map(new BadwordMapFunction())
-//                .addSink(new CollectSink());
-
         // send some message
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < MESSAGE_COUNT; i++) {
             producer.send(new ProducerRecord<String, String>(TOPIC_NAME, "msg_partition_1", "fuck this damn project" + String.valueOf(i))).get();
         }
-
-        List<BadwordEntries> values = CollectSink.values;
 
         env.execute();
 
         System.out.println(CollectSink.values);
 
+        Assertions.assertEquals(MESSAGE_COUNT, CollectSink.values.size());
         Assertions.assertTrue(CollectSink.values.contains(
                 new BadwordEntries(List.of(new BadwordEntry(List.of("fuck"), new Position(0, 3)), new BadwordEntry(List.of("damn"), new Position(10, 13))))));
     }
