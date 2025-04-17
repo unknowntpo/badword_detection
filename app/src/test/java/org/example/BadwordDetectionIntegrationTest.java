@@ -76,17 +76,6 @@ public class BadwordDetectionIntegrationTest {
 
     @Test
     public void testBadwordDetection() throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-        // enable avro
-        env.getConfig().enableForceAvro();
-        env.getConfig().disableGenericTypes();
-
-        System.out.println("enabled ? " + env.getConfig().isForceAvroEnabled());
-
-        // configure your test environment
-        env.setParallelism(2);
-
         // values are collected in a static variable
         CollectSink.values.clear();
 
@@ -99,16 +88,14 @@ public class BadwordDetectionIntegrationTest {
                 .setValueOnlyDeserializer(new SimpleStringSchema())
                 .build();
 
-        env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source")
-                .map(new BadwordMapFunction())
-                .addSink(new CollectSink());
+        BadwordDetection job = new BadwordDetection(source, new CollectSink());
 
-        // send some message
+       // send some message
         for (int i = 0; i < MESSAGE_COUNT; i++) {
             producer.send(new ProducerRecord<String, String>(TOPIC_NAME, "msg_partition_1", "fuck this damn project" + String.valueOf(i))).get();
         }
 
-        env.execute();
+        job.doJob();
 
         System.out.println(CollectSink.values);
 
